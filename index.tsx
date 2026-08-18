@@ -19,6 +19,7 @@ import {
     categoryLen,
     collapseGroup,
     createGroup,
+    deleteGroup,
     getAllGroupChannelIds as getAllGroupChannelIdsFromData,
     getGroupByIndex,
     getGroupChannelIds,
@@ -26,7 +27,8 @@ import {
     getSections,
     getUserGroups,
     init,
-    saveGroups,
+    moveGroupDown,
+    moveGroupUp,
     toggleMember,
     useFriendGroups
 } from "./data";
@@ -324,6 +326,8 @@ export default definePlugin({
 
         const [groupKey, group] = groupEntry;
         const colorNum = parseInt(group.color.replace("#", ""), 16);
+        const totalGroups = categoryLen();
+        const groupIndex = section - 1;
 
         return (
             <Clickable
@@ -333,18 +337,28 @@ export default definePlugin({
                         <Menu.Menu
                             navId="vc-friendgroups-header-menu"
                             onClose={() => FluxDispatcher.dispatch({ type: "CONTEXT_MENU_CLOSE" })}
-                            color="danger"
                             aria-label="Friend Groups Menu"
                         >
+                            {groupIndex > 0 && (
+                                <Menu.MenuItem
+                                    id="vc-fg-move-up"
+                                    label="Move Up"
+                                    action={() => moveGroupUp(groupKey)}
+                                />
+                            )}
+                            {groupIndex < totalGroups - 1 && (
+                                <Menu.MenuItem
+                                    id="vc-fg-move-down"
+                                    label="Move Down"
+                                    action={() => moveGroupDown(groupKey)}
+                                />
+                            )}
+                            <Menu.MenuSeparator />
                             <Menu.MenuItem
                                 id="vc-fg-delete-group"
                                 color="danger"
                                 label="Delete Group"
-                                action={async () => {
-                                    const groups = getGroups();
-                                    delete groups[groupKey];
-                                    await saveGroups(groups);
-                                }}
+                                action={() => deleteGroup(groupKey)}
                             />
                         </Menu.Menu>
                     ));

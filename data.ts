@@ -135,3 +135,36 @@ export function getUserGroups(userId: string): string[] {
         .filter(([_, group]) => group.members.includes(userId))
         .map(([key]) => key);
 }
+
+function reorderGroups(newOrder: string[]) {
+    const reordered: GroupMap = {};
+    for (const key of newOrder) {
+        if (cachedGroups[key]) {
+            reordered[key] = cachedGroups[key];
+        }
+    }
+    saveGroups(reordered);
+}
+
+export function moveGroupUp(key: string): void {
+    const keys = Object.keys(cachedGroups);
+    const idx = keys.indexOf(key);
+    if (idx <= 0) return;
+
+    [keys[idx - 1], keys[idx]] = [keys[idx], keys[idx - 1]];
+    reorderGroups(keys);
+}
+
+export function moveGroupDown(key: string): void {
+    const keys = Object.keys(cachedGroups);
+    const idx = keys.indexOf(key);
+    if (idx === -1 || idx >= keys.length - 1) return;
+
+    [keys[idx], keys[idx + 1]] = [keys[idx + 1], keys[idx]];
+    reorderGroups(keys);
+}
+
+export function deleteGroup(groupKey: string): void {
+    const keys = Object.keys(cachedGroups).filter(k => k !== groupKey);
+    reorderGroups(keys);
+}
